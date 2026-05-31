@@ -1,0 +1,18 @@
+syntax = "proto3";
+package info.pithos.runtime.model.protocol.pubsub;
+
+message Payload {
+  Data data = 1;
+}
+
+message Data {
+  string messageId = 1;
+  string orderingKey = 2;
+  string message = 3;
+}
+
+message PubSubMessageResponse {
+  string messageId = 1;
+  bool ack = 2;
+  string errorMessage = 3; 
+}

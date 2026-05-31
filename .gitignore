@@ -1,0 +1,16 @@
+target/
+
+# Eclipse
+.classpath
+.project
+.settings/
+
+# IntelliJ
+.idea/
+*.iml
+
+# macOS
+.DS_Store
+
+claude.md
+session.txt

@@ -1,0 +1,18 @@
+syntax = "proto3";
+package info.pithos.runtime.model.protocol.http;
+
+message Response {
+  Error error = 1;
+  Entity entity = 2;
+  
+}
+
+message Error {
+  string errorCode = 1;
+  string errorMessage = 2;
+}
+
+message Entity {
+  string objectName = 1;
+  string id = 2;
+}

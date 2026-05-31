@@ -1,0 +1,19 @@
+syntax = "proto2";
+package info.pithos.runtime.model.test;
+
+message TestObject {
+  required string id = 1;
+  optional string stringValue = 2;
+  optional int32 intValue = 3;
+  optional int64 longValue = 4;
+  optional bytes binary = 5;
+  optional bool exists = 6;
+  
+  enum TestOptionsType {
+    option1 = 0;
+    option2 = 1;
+    option3 = 3;
+  }
+  
+  optional TestOptionsType option = 7;
+}

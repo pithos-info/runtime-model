@@ -1,0 +1,194 @@
+syntax = "proto3";
+package info.pithos.runtime.model.config;
+
+
+message Configs {
+  map<string, string> configs = 1;
+  map<string, string> defaults = 2;
+  map<string, int32> intConfigs = 3;
+  map<string, int64> longConfigs = 4;
+  map<string, bool> boolConfigs = 5;  
+}
+
+message ConfigMap {
+  map<string, Configs> configs = 1;
+  BootstrapConfigs bootstrapConfigs = 2;
+  HttpConfigs httpConfigs = 3;
+  PubSubConfigs pubsubConfigs = 4;
+  FirestoreConfigs firestoreConfigs = 5;
+  BigQueryConfigs bigQueryConfigs = 6;
+  LLMConfigs llmConfigs = 7;
+  ChromaDbConfigs chromaDbConfigs = 8;
+  GcsBlobStorageConfigs gcsBlobStorageConfigs = 9;
+  MinioBlobStorageConfigs minioBlobStorageConfigs = 10;
+  PostgresConfigs postgresConfigs = 11;
+  CloudSqlConfigs cloudSqlConfigs = 12;
+  RedisConfigs redisConfigs = 13;
+  MemoryStoreConfigs memoryStoreConfigs = 14;
+}
+
+message BootstrapConfigs {  
+  string serviceName = 1;
+  // applied to number of cores available for thread pool size
+  int32 multiplier = 2;
+}
+
+// Protocol agnostic Endpoint details 
+message Endpoint {
+	// protocol type
+	enum ProtocolType {
+	  HTTP = 0;
+	  TCP = 1;
+	}
+
+	// protocol agnostic secure transport type
+	enum SecureTransportType {
+	  plainTransport = 0;
+	  SSL = 1;
+	  mTLS = 2;
+	}
+
+  ProtocolType protocolType = 1;
+  SecureTransportType secureTransportType = 2;
+  string host = 3;
+  int32 port = 4;
+  string uri = 5;
+}
+
+message PubSubConfigs {
+  string projectId = 1;
+  repeated PubSubConfig configs = 2;
+}
+
+message PubSubConfig {
+  string subscriptionId = 1;
+  
+  int64 maxOutstandingMessageCount = 2;
+  
+  // set 100 for 100 MiB
+  int64 maxOutstandingRequestMiB = 3;
+  
+  int32 subscriberTimeoutInSec = 4;
+  
+  int32 concurrencyCount = 5;
+  
+  string schema = 6;
+  
+  enum  SinkType {
+    NOP = 0;
+    BigQuery = 1;
+    FireStore = 2;
+    BigTable = 3;
+    ChromaDb = 4;
+  }
+  
+  SinkType sink = 7;
+}
+
+message FirestoreConfigs {
+  string projectId = 1;
+  int32 queryBatchSize = 2;
+}
+
+message BigQueryConfigs {
+  string projectId = 1;
+  repeated BigQueryDataset datasets = 2;
+}
+
+message BigQueryDataset {
+  string datasetPrefix = 1; 
+  string datasetName = 2;
+  repeated string tableNames = 3;
+}
+
+message ChromaDbConfigs {
+  string serverName = 1;
+  int32 port = 2;
+  string collectionName = 3;
+}
+
+message GcsBlobStorageConfigs {
+  string projectId = 1;
+  string defaultBucket = 2;
+}
+
+message MinioBlobStorageConfigs {
+  string endpoint = 1;
+  string accessKey = 2;
+  string secretKey = 3;
+  string defaultBucket = 4;
+  bool   useSsl = 5;
+}
+
+message PostgresConfigs {
+  string host = 1;
+  int32 port = 2;
+  string database = 3;
+  string username = 4;
+  string password = 5;
+  int32 maxPoolSize = 6;
+}
+
+message CloudSqlConfigs {
+  string instanceConnectionName = 1;
+  string database = 2;
+  string username = 3;
+  string password = 4;
+  int32 maxPoolSize = 5;
+  bool useIamAuth = 6;
+}
+
+message RedisConfigs {
+  string host = 1;
+  int32 port = 2;
+  string password = 3;
+  int32 database = 4;
+  bool useSsl = 5;
+  int32 timeoutMs = 6;
+}
+
+message MemoryStoreConfigs {
+  string host = 1;
+  int32 port = 2;
+  string password = 3;
+  bool useSsl = 4;
+  int32 timeoutMs = 5;
+}
+
+message HttpConfigs {
+  int32 maxTotalConnections = 1;
+  int32 connectionTimeoutMs = 2;
+  int32 maxRetryCount = 3;
+  int32 maxRequestPerHost = 4;
+  int32 maxRedirects = 5;
+  int32 requestTimeoutMs = 6;
+  string proxyServer = 7;
+  int32 proxyServePort = 8;
+ }
+
+ message LLMConfigs {
+   repeated LLMConfig configs = 1;
+ }
+
+ message LLMConfig {
+  Endpoint endpoint = 1;
+  string modelVersion = 2;
+  int32 temperature = 3;
+
+  enum  LLModelFamilyType {
+      NOP = 0;
+      OpenAI = 1;
+      Claude = 2;
+      Gemini = 3;
+      DeepSeek = 4;
+      Grok3 = 5;
+      Llama = 6;
+      Qwen = 7;
+      Kimi = 8;
+      Mistral = 9;
+      GLM = 10;
+      GPT_OSS = 11;
+    }
+
+    LLModelFamilyType modelFamily = 4;
+ }

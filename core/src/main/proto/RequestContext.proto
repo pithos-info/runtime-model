@@ -1,0 +1,121 @@
+syntax = "proto3";
+package info.pithos.runtime.model.protocol.http;
+
+import "Config.proto";
+
+// deserialized from an API exposed by server
+// To be passed thru the entire request/response flow
+// will all the auth information
+message AuthContext {
+  string userAuthToken = 1;
+  string userId = 2;
+  string enterpriseId = 3;
+}
+
+// request context de-serialized from an API exposed by server 
+// To be passed thru the entire request/response flow
+message RequestContext {
+  // used for logging/tracing
+  string requestId = 1;
+  
+  LogLevelType logLevel = 2;
+  
+  // source IP, host
+  // use for logging purpose 
+  string source = 3;
+  
+  string host = 4;
+  int32 port = 5;
+
+  // user agent for any rendering or content logic
+  // in request/response flow
+  string userAgent = 6;
+
+  // Cache-Control: max-age=<seconds>
+  // Cache-Control: max-stale[=<seconds>]
+  // Cache-Control: min-fresh=<seconds>
+  // Cache-Control: no-cache 
+  // Cache-Control: no-store
+  // Cache-Control: no-transform
+  // Cache-Control: only-if-cached
+  string cacheControl = 7;
+
+  string locale = 8;
+   
+   string protocolVersion = 9;
+   
+  // auth context
+  AuthContext authContext = 10;
+  
+  Pagination pagination = 11;
+    
+  map<string, string> attributes = 12;
+}
+
+// protocol agnostic content type header mapping
+enum ContentType {
+  PLAIN = 0;   // text/plain
+  JSON = 1;    // application/json
+  BINARY = 2;  // application/octet-stream
+  PROTO = 3;   // application/protobuf
+  HTML = 4;    // text/html
+  XML = 5;     // application/xml
+}
+
+enum LogLevelType {
+  NO_LOG = 0;
+  ERROR = 1;
+  WARN = 2;
+  INFO = 3;
+  DEBUG = 4;
+  TRACE = 5;
+  FINE = 6; 
+}
+
+message Pagination{
+  int64 from = 1;
+  int32 pageSize = 2;
+  int64 timeRangeFrom = 3;
+  int32 timeRangeLimit = 4;
+  bool isDesc = 5; 
+}
+
+// protocol agnostic request payload
+// deserialized at the entry point of the api exposed by the server
+// or constructed to make an external cal;l (e.g. http request) 
+message Payload {
+  string text = 1;
+  string json = 2;
+  bytes proto = 3;
+  bytes binary = 5;
+}
+
+// Content attributes
+message Content {
+  ContentType contentType = 1;
+  
+  bool compress = 2;
+  bool encrypt = 3;
+  Payload body = 4;
+  bool multiPart = 5;
+  
+  map<string, string> headers = 6;
+
+  map<string, string> queryParameters = 7;
+  
+  // request parameters
+  map<string, string> parameters = 8;
+
+  // set when multi-part is enabled
+  map<string, Payload> multiparts = 9;
+}
+
+// Outbound Http request 
+message HttpRequestContext {
+  RequestContext requestContext = 1;
+
+  info.pithos.runtime.model.config.Endpoint endpoint = 2;
+  
+  Content content = 3;
+}
+
