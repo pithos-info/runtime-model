@@ -17,19 +17,20 @@ message AuthContext {
 message RequestContext {
   // used for logging/tracing
   string requestId = 1;
+  string enterpriseId = 2;
   
-  LogLevelType logLevel = 2;
+  LogLevelType logLevel = 3;
   
   // source IP, host
   // use for logging purpose 
-  string source = 3;
+  string source = 4;
   
-  string host = 4;
-  int32 port = 5;
+  string host = 5;
+  int32 port = 6;
 
   // user agent for any rendering or content logic
   // in request/response flow
-  string userAgent = 6;
+  string userAgent = 7;
 
   // Cache-Control: max-age=<seconds>
   // Cache-Control: max-stale[=<seconds>]
@@ -38,18 +39,18 @@ message RequestContext {
   // Cache-Control: no-store
   // Cache-Control: no-transform
   // Cache-Control: only-if-cached
-  string cacheControl = 7;
+  string cacheControl = 8;
 
-  string locale = 8;
+  string locale = 9;
    
-   string protocolVersion = 9;
+   string protocolVersion = 10;
    
   // auth context
-  AuthContext authContext = 10;
+  AuthContext authContext = 11;
   
-  Pagination pagination = 11;
+  Pagination pagination = 12;
     
-  map<string, string> attributes = 12;
+  map<string, string> attributes = 13;
 }
 
 // protocol agnostic content type header mapping
