@@ -27,6 +27,8 @@ message ConfigMap {
   MemoryStoreConfigs memoryStoreConfigs = 14;
   HashiCorpVaultConfigs hashiCorpVaultConfigs = 15;
   GcpSecretManagerConfigs gcpSecretManagerConfigs = 16;
+  KeycloakOAuthConfigs keycloakOAuthConfigs = 17;
+  GcpIdentityOAuthConfigs gcpIdentityOAuthConfigs = 18;
 }
 
 message BootstrapConfigs {  
@@ -167,6 +169,20 @@ message HashiCorpVaultConfigs {
 
 message GcpSecretManagerConfigs {
   string projectId = 1;
+}
+
+message KeycloakOAuthConfigs {
+  string serverUrl = 1;
+  string realm = 2;
+  string clientId = 3;
+  string clientSecret = 4;
+  int32 timeoutMs = 5;
+}
+
+message GcpIdentityOAuthConfigs {
+  string projectId = 1;
+  string serviceAccountEmail = 2;
+  repeated string defaultScopes = 3;
 }
 
 message HttpConfigs {
