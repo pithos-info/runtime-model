@@ -25,6 +25,8 @@ message ConfigMap {
   CloudSqlConfigs cloudSqlConfigs = 12;
   RedisConfigs redisConfigs = 13;
   MemoryStoreConfigs memoryStoreConfigs = 14;
+  HashiCorpVaultConfigs hashiCorpVaultConfigs = 15;
+  GcpSecretManagerConfigs gcpSecretManagerConfigs = 16;
 }
 
 message BootstrapConfigs {  
@@ -153,6 +155,18 @@ message MemoryStoreConfigs {
   string password = 3;
   bool useSsl = 4;
   int32 timeoutMs = 5;
+}
+
+message HashiCorpVaultConfigs {
+  string address = 1;
+  string token = 2;
+  string namespace = 3;
+  string mountPath = 4;
+  int32 timeoutMs = 5;
+}
+
+message GcpSecretManagerConfigs {
+  string projectId = 1;
 }
 
 message HttpConfigs {
