@@ -5,8 +5,8 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>info.pithos</groupId>
-        <artifactId>pithos-models</artifactId>
+        <groupId>info.pithos.runtime</groupId>
+        <artifactId>pithos-runtime-model</artifactId>
         <version>1.0.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
