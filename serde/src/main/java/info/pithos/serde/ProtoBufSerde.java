@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.google.protobuf.GeneratedMessageV3;
+import com.google.protobuf.Message;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Parser;
 import com.google.protobuf.util.JsonFormat;
@@ -19,7 +20,7 @@ import com.google.protobuf.util.JsonFormat;
  *
  * @param <T>
  */
-public class ProtoBufSerde<T extends GeneratedMessageV3> implements ObjectSerde<T> {
+public class ProtoBufSerde<T extends Message> implements ObjectSerde<T> {
 
 	private final T proto;
 	private final String json;
@@ -72,7 +73,7 @@ public class ProtoBufSerde<T extends GeneratedMessageV3> implements ObjectSerde<
 	 * @param json
 	 * @param builder
 	 */
-	public ProtoBufSerde(String json, GeneratedMessageV3.Builder<?> builder) {
+	public ProtoBufSerde(String json, Message.Builder builder) {
 		if (json == null || json.isEmpty()) {
 			throw new IllegalArgumentException("null or empty json");
 		}
@@ -122,7 +123,7 @@ public class ProtoBufSerde<T extends GeneratedMessageV3> implements ObjectSerde<
 	 * @param proto
 	 * @return
 	 */
-	public static <T extends GeneratedMessageV3> Map<String, Object> convert(T proto) {
+	public static <T extends Message> Map<String, Object> convert(T proto) {
 		Map<String, Object> map = new HashMap<>();
 
 		proto.getAllFields().forEach((field, value) -> {
