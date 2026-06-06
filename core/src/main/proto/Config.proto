@@ -149,6 +149,8 @@ message RedisConfigs {
   int32 database = 4;
   bool useSsl = 5;
   int32 timeoutMs = 6;
+  // Distributed lock TTL in seconds. Defaults to 5 if unset.
+  int32 lockTtlSeconds = 7;
 }
 
 message MemoryStoreConfigs {
@@ -157,6 +159,8 @@ message MemoryStoreConfigs {
   string password = 3;
   bool useSsl = 4;
   int32 timeoutMs = 5;
+  // Distributed lock TTL in seconds. Defaults to 5 if unset.
+  int32 lockTtlSeconds = 6;
 }
 
 message HashiCorpVaultConfigs {
