@@ -1,19 +1,22 @@
-syntax = "proto2";
+syntax = "proto3";
 package info.pithos.runtime.model.test;
 
 message TestObject {
-  required string id = 1;
-  optional string stringValue = 2;
-  optional int32 intValue = 3;
-  optional int64 longValue = 4;
-  optional bytes binary = 5;
-  optional bool exists = 6;
-  
+  string id = 1;
+  string stringValue = 2;
+  int32 intValue = 3;
+  int64 longValue = 4;
+  bytes binary = 5;
+  bool exists = 6;
+
   enum TestOptionsType {
     option1 = 0;
     option2 = 1;
     option3 = 3;
   }
   
-  optional TestOptionsType option = 7;
+  TestOptionsType option = 7;
+
+  repeated string stringValues = 8;
+  repeated int32 integerValues = 9;
 }
