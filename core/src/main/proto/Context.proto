@@ -1,5 +1,5 @@
 syntax = "proto3";
-package info.pithos.runtime.model.protocol.http;
+package info.pithos.runtime.model.protocol;
 
 import "Config.proto";
 
