@@ -181,6 +181,7 @@ message KeycloakOAuthConfigs {
   string clientId = 3;
   string clientSecret = 4;
   int32 timeoutMs = 5;
+  string idpAlias = 6;
 }
 
 message GcpIdentityOAuthConfigs {
