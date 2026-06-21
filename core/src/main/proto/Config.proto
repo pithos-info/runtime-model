@@ -45,6 +45,7 @@ message ConfigMap {
   GcpSecretManagerConfigs gcpSecretManagerConfigs = 16;
   KeycloakOAuthConfigs keycloakOAuthConfigs = 17;
   GcpIdentityOAuthConfigs gcpIdentityOAuthConfigs = 18;
+  EmailConfigs emailConfigs = 19;
 }
 
 message BootstrapConfigs {  
@@ -204,6 +205,19 @@ message GcpIdentityOAuthConfigs {
   string projectId = 1;
   string serviceAccountEmail = 2;
   repeated string defaultScopes = 3;
+}
+
+message EmailConfigs {
+  enum Provider {
+    SENDGRID = 0;
+    MAILGUN  = 1;
+  }
+  Provider provider        = 1;
+  string   apiKey          = 2;
+  string   fromAddress     = 3;
+  string   fromName        = 4;
+  string   domain          = 5;  // required for Mailgun; unused by SendGrid
+  int32    requestTimeoutMs = 6;
 }
 
 message HttpConfigs {
