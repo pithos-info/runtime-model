@@ -68,6 +68,12 @@ message RequestContext {
   Pagination pagination = 12;
     
   map<string, string> attributes = 13;
+
+  // OTel trace ID for the current HTTP/gRPC call — populated by the framework
+  string traceId = 14;
+
+  // Journey set by handlers at the entry point — propagates unchanged downstream
+  string journey = 15;
 }
 
 // protocol agnostic content type header mapping

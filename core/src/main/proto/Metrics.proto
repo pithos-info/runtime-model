@@ -1,0 +1,226 @@
+/*
+ * Copyright 2026 Pithos
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+ * implied. See the License for the specific language governing
+ * permissions and limitations under the License.
+ */
+
+syntax = "proto3";
+package info.pithos.runtime.model.metrics;
+
+// ─── Shared enums ─────────────────────────────────────────────────────────────
+
+enum MetricType {
+  LATENCY = 0;
+  FAULT   = 1;
+  STATE   = 2;
+  USAGE   = 3;
+}
+
+enum OutcomeType {
+  SUCCESS = 0;
+  FAILURE = 1;  // expected business failure (validation, not found, etc.)
+  TIMEOUT = 2;
+  PARTIAL = 3;
+  ERROR   = 4;  // unexpected system error (exception, crash)
+}
+
+enum ProtocolType {
+  HTTP = 0;
+  GRPC = 1;
+}
+
+enum ComponentType {
+  RELATIONAL = 0;
+  CACHE      = 1;
+  BLOB       = 2;
+  MESSAGING  = 3;
+  ANALYTICS  = 4;
+}
+
+// ─── MetricEvent — API surface ────────────────────────────────────────────────
+//
+// Lightweight, tier-agnostic descriptor passed to MetricsCommitter.record().
+// Callers set only the fields relevant to their call site.
+// MetricEventBuilder extracts tenant/correlation context from RequestContext +
+// SystemContext and determines the storage tier from routing hints.
+//
+// Tier routing:
+//   componentType set              → Tier 3  InfraMetricRaw
+//   step set + rc.journey  → Tier 1  JourneyMetricRaw
+//   neither                        → Tier 2  ServiceMetricRaw
+
+message MetricEvent {
+  string        metric        = 1;
+  MetricType    metricType        = 2;
+  OutcomeType   outcome           = 3;
+  double        value             = 4;
+
+  // Tier 1 — set by handlers at the journey/step boundary
+  string        step          = 5;
+
+  // Tier 3 — set by runtime/data client interceptors
+  ComponentType componentType     = 6;
+  string        componentId       = 7;
+  string        componentProvider = 8;
+
+  // Tier 2 — HTTP path or gRPC method name
+  string        method            = 9;
+  ProtocolType  protocol          = 10;
+}
+
+// ─── Key convention ───────────────────────────────────────────────────────────
+//
+// Every analytic table message has a companion key message as its first field.
+//   field[1] = partition key  (always dateBucket)
+//   field[2..N] = cluster keys in positional order
+
+// ─── Tier 1 — Business / Journey Metrics ──────────────────────────────────────
+//
+// Partition   : dateBucket
+// Raw cluster : enterpriseId → journey → requestId → step
+// Agg cluster : enterpriseId → journey → step  → outcome
+
+message JourneyMetricKey {
+  string dateBucket   = 1;  // partition
+  string enterpriseId = 2;  // cluster[1]
+  string journey  = 3;  // cluster[2]
+  string requestId    = 4;  // cluster[3] — one journey execution
+  string step     = 5;  // cluster[4] — service/worker entry point
+}
+
+// One row per metric event emitted within a journey step execution.
+message JourneyMetricRaw {
+  JourneyMetricKey key         = 1;
+  OutcomeType      outcome     = 2;
+  MetricType       metricType  = 3;
+  double           value       = 4;
+  int64            timestampMs = 5;  // epoch millis
+  string           traceId     = 6;  // OTel trace
+}
+
+message JourneyMetricAggKey {
+  string      dateBucket   = 1;  // partition
+  string      enterpriseId = 2;  // cluster[1]
+  string      journey  = 3;  // cluster[2]
+  string      step     = 4;  // cluster[3]
+  OutcomeType outcome      = 5;  // cluster[4]
+}
+
+// Pre-computed step-level aggregates for monitoring dashboards.
+message JourneyMetricAgg {
+  JourneyMetricAggKey key          = 1;
+  int64               requestCount = 2;
+  int64               errorCount   = 3;
+  double              p50Ms        = 4;
+  double              p99Ms        = 5;
+  double              avgMs        = 6;
+}
+
+// ─── Tier 2 — Application / Service Metrics ───────────────────────────────────
+//
+// Partition   : dateBucket
+// Raw cluster : enterpriseId → serviceName → requestId
+// Agg cluster : serviceName  → instanceId  → metric → outcome
+
+message ServiceMetricKey {
+  string dateBucket   = 1;  // partition
+  string enterpriseId = 2;  // cluster[1]
+  string serviceName  = 3;  // cluster[2]
+  string requestId    = 4;  // cluster[3]
+}
+
+// One row per metric event emitted by a service or async worker.
+// journey and method are columns — not cluster keys.
+message ServiceMetricRaw {
+  ServiceMetricKey key         = 1;
+  string           instanceId  = 2;  // specific pod/node; column filter only
+  string           journey = 3;  // propagated via RequestContext; column filter only
+  ProtocolType     protocol    = 4;
+  string           method      = 5;  // HTTP path or gRPC method name
+  string           metric  = 6;
+  MetricType       metricType  = 7;
+  OutcomeType      outcome     = 8;
+  double           value       = 9;
+  int64            timestampMs = 10; // epoch millis
+  string           traceId     = 11; // OTel trace
+}
+
+message ServiceMetricAggKey {
+  string      dateBucket  = 1;  // partition
+  string      serviceName = 2;  // cluster[1]
+  string      instanceId  = 3;  // cluster[2]
+  string      metric  = 4;  // cluster[3]
+  OutcomeType outcome     = 5;  // cluster[4]
+}
+
+// Pre-computed service health aggregates. Internal ops view — no enterpriseId.
+message ServiceMetricAgg {
+  ServiceMetricAggKey key          = 1;
+  int64               requestCount = 2;
+  int64               errorCount   = 3;
+  double              p50Ms        = 4;
+  double              p99Ms        = 5;
+  double              minMs        = 6;
+  double              maxMs        = 7;
+}
+
+// ─── Tier 3 — Infrastructure Metrics ──────────────────────────────────────────
+//
+// Logged automatically by runtime/data client interceptors — not by infra components.
+// metric encodes the operation: selectQueryLatency, writeLatency, cacheGetLatency.
+//
+// Partition   : dateBucket
+// Raw cluster : componentType → componentId → requestId
+// Agg cluster : componentType → componentId → instanceId → metric
+
+message InfraMetricKey {
+  string        dateBucket    = 1;  // partition
+  ComponentType componentType = 2;  // cluster[1]
+  string        componentId   = 3;  // cluster[2] — logical component instance
+  string        requestId     = 4;  // cluster[3] — cross-tier correlation
+}
+
+// One row per metric event intercepted at the runtime/data client call layer.
+message InfraMetricRaw {
+  InfraMetricKey key               = 1;
+  string         instanceId        = 2;  // specific node (replica, broker, shard)
+  string         componentProvider = 3;  // Postgres | Redis | GCS | Kafka etc.
+  string         metric        = 4;
+  MetricType     metricType        = 5;
+  OutcomeType    outcome           = 6;
+  double         value             = 7;
+  int64          timestampMs       = 8;  // epoch millis
+  string         traceId           = 9;  // OTel trace
+}
+
+message InfraMetricAggKey {
+  string        dateBucket    = 1;  // partition
+  ComponentType componentType = 2;  // cluster[1]
+  string        componentId   = 3;  // cluster[2]
+  string        instanceId    = 4;  // cluster[3]
+  string        metric    = 5;  // cluster[4]
+}
+
+// Pre-computed infra health aggregates.
+// outcome is a data column — 4 cluster columns is the BigQuery maximum.
+message InfraMetricAgg {
+  InfraMetricAggKey key          = 1;
+  OutcomeType       outcome      = 2;
+  int64             requestCount = 3;
+  int64             errorCount   = 4;
+  int64             timeoutCount = 5;
+  double            p50Ms        = 6;
+  double            p99Ms        = 7;
+  double            minMs        = 8;
+  double            maxMs        = 9;
+}

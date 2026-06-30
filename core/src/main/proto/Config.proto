@@ -46,6 +46,7 @@ message ConfigMap {
   KeycloakOAuthConfigs keycloakOAuthConfigs = 17;
   GcpIdentityOAuthConfigs gcpIdentityOAuthConfigs = 18;
   EmailConfigs emailConfigs = 19;
+  CassandraConfigs cassandraConfigs = 20;
 }
 
 message BootstrapConfigs {  
@@ -218,6 +219,32 @@ message EmailConfigs {
   string   fromName        = 4;
   string   domain          = 5;  // required for Mailgun; unused by SendGrid
   int32    requestTimeoutMs = 6;
+}
+
+enum CassandraConsistencyLevel {
+  LOCAL_QUORUM = 0;
+  QUORUM       = 1;
+  ONE          = 2;
+  LOCAL_ONE    = 3;
+  ALL          = 4;
+  SERIAL       = 5;
+  LOCAL_SERIAL = 6;
+}
+
+message CassandraKeyspaceConfig {
+  string                    keyspace          = 1;
+  CassandraConsistencyLevel readConsistency   = 2;  // default LOCAL_QUORUM
+  CassandraConsistencyLevel writeConsistency  = 3;  // default LOCAL_QUORUM
+}
+
+message CassandraConfigs {
+  repeated string              contactPoints    = 1;  // host names or IPs
+  int32                        port             = 2;  // default 9042
+  string                       localDatacenter  = 3;  // required for load balancing
+  string                       username         = 4;
+  string                       password         = 5;
+  int32                        requestTimeoutMs = 6;
+  repeated CassandraKeyspaceConfig keyspaces    = 7;
 }
 
 message HttpConfigs {
