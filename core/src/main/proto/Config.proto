@@ -47,6 +47,7 @@ message ConfigMap {
   GcpIdentityOAuthConfigs gcpIdentityOAuthConfigs = 18;
   EmailConfigs emailConfigs = 19;
   CassandraConfigs cassandraConfigs = 20;
+  MetricsConfigs   metricsConfigs   = 21;
 }
 
 message BootstrapConfigs {  
@@ -245,6 +246,12 @@ message CassandraConfigs {
   string                       password         = 5;
   int32                        requestTimeoutMs = 6;
   repeated CassandraKeyspaceConfig keyspaces    = 7;
+}
+
+message MetricsConfigs {
+  int32  flushIntervalSeconds = 1;  // how often to flush buffered metrics to Cassandra (default 60)
+  int32  maxBufferSize        = 2;  // per-tier early-flush threshold (default 10000)
+  string cassandraKeyspace    = 3;  // keyspace for all raw and counter tables
 }
 
 message HttpConfigs {
