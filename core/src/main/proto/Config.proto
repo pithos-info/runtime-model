@@ -249,9 +249,10 @@ message CassandraConfigs {
 }
 
 message MetricsConfigs {
-  int32  flushIntervalSeconds = 1;  // how often to flush buffered metrics to Cassandra (default 60)
+  int32  flushIntervalSeconds = 1;  // how often to flush buffered metrics (default 60)
   int32  maxBufferSize        = 2;  // per-tier early-flush threshold (default 10000)
-  string cassandraKeyspace    = 3;  // keyspace for all raw and counter tables
+  string cassandraKeyspace    = 3;  // keyspace for Cassandra raw and counter tables
+  string bqDataset            = 4;  // BigQuery dataset name for BQ counter and raw tables
 }
 
 message HttpConfigs {
